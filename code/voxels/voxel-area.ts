@@ -1,11 +1,13 @@
 // ********************************************************************************************************************
+import { GeometryBuilder } from '../geometry/geometry-builder';
+// ********************************************************************************************************************
+import { GeometryData } from '../geometry/geometry-data';
+// ********************************************************************************************************************
 import { lerp } from '../helpers/math.helper';
 // ********************************************************************************************************************
 import { Bounds3 } from '../types/bounds3';
 // ********************************************************************************************************************
 import { Vector3 } from '../types/vector3';
-// ********************************************************************************************************************
-import { VoxelQuad } from './voxel-quad';
 // ********************************************************************************************************************
 export class VoxelArea extends Bounds3 {
 
@@ -15,26 +17,19 @@ export class VoxelArea extends Bounds3 {
     private children: VoxelArea[] = [];
 
     // ****************************************************************************************************************
-    // voxel - the voxel
+    // dirty - the dirty
     // ****************************************************************************************************************
-    public voxel: number = 0;
+    public dirty: boolean = true;
+
+    // ****************************************************************************************************************
+    // state - the state
+    // ****************************************************************************************************************
+    private state: boolean = false;
 
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(min: Vector3, max: Vector3, public quad: VoxelQuad | null = null) { super(min, max); }
-
-    // ****************************************************************************************************************
-    // function:    collapseChildren
-    // ****************************************************************************************************************
-    // parameters:  n/a
-    // ****************************************************************************************************************
-    // returns:     n/a
-    // ****************************************************************************************************************
-    private collapseChildren(): void {
-
-        this.children = [];
-    }
+    constructor(min: Vector3, max: Vector3, public parent: VoxelArea | null = null) { super(min, max); }
 
     // ****************************************************************************************************************
     // function:    createChildren
@@ -81,21 +76,21 @@ export class VoxelArea extends Bounds3 {
             // obtain areas
             // ********************************************************************************************************
 
-            const areaLUB = new VoxelArea(new Vector3(minX, midY, midZ), new Vector3(midX, maxY, maxZ), this.quad);
+            const areaLUB = new VoxelArea(new Vector3(minX, midY, midZ), new Vector3(midX, maxY, maxZ), this);
 
-            const areaRUB = new VoxelArea(new Vector3(midX, midY, midZ), new Vector3(maxX, maxY, maxZ), this.quad);
+            const areaRUB = new VoxelArea(new Vector3(midX, midY, midZ), new Vector3(maxX, maxY, maxZ), this);
 
-            const areaLDB = new VoxelArea(new Vector3(minX, minY, midZ), new Vector3(midX, midY, maxZ), this.quad);
+            const areaLDB = new VoxelArea(new Vector3(minX, minY, midZ), new Vector3(midX, midY, maxZ), this);
 
-            const areaRDB = new VoxelArea(new Vector3(midX, minY, midZ), new Vector3(maxX, midY, maxZ), this.quad);
+            const areaRDB = new VoxelArea(new Vector3(midX, minY, midZ), new Vector3(maxX, midY, maxZ), this);
 
-            const areaLUF = new VoxelArea(new Vector3(minX, midY, minZ), new Vector3(midX, maxY, midZ), this.quad);
+            const areaLUF = new VoxelArea(new Vector3(minX, midY, minZ), new Vector3(midX, maxY, midZ), this);
 
-            const areaRUF = new VoxelArea(new Vector3(midX, midY, minZ), new Vector3(maxX, maxY, midZ), this.quad);
+            const areaRUF = new VoxelArea(new Vector3(midX, midY, minZ), new Vector3(maxX, maxY, midZ), this);
 
-            const areaLDF = new VoxelArea(new Vector3(minX, minY, minZ), new Vector3(midX, midY, midZ), this.quad);
+            const areaLDF = new VoxelArea(new Vector3(minX, minY, minZ), new Vector3(midX, midY, midZ), this);
 
-            const areaRDF = new VoxelArea(new Vector3(midX, minY, minZ), new Vector3(maxX, midY, midZ), this.quad);
+            const areaRDF = new VoxelArea(new Vector3(midX, minY, minZ), new Vector3(maxX, midY, midZ), this);
 
             this.children = [areaLUB, areaRUB, areaLDB, areaRDB, areaLUF, areaRUF, areaLDF, areaRDF];
         }
@@ -103,317 +98,133 @@ export class VoxelArea extends Bounds3 {
     }
 
     // ****************************************************************************************************************
-    // function:    setVoxel
+    // function:    createGeometry
     // ****************************************************************************************************************
-    // parameters:  x - the x
-    // ****************************************************************************************************************
-    //              y - the y
-    // ****************************************************************************************************************
-    //              z - the z
-    // ****************************************************************************************************************
-    //              voxel - the voxel
+    // parameters:  n/a
     // ****************************************************************************************************************
     // returns:     n/a
     // ****************************************************************************************************************
-    public setVoxel(x: number, y: number, z: number, voxel: number): void {
+    public createGeometry(builder: GeometryBuilder): void {
 
-    }
-
-    // ****************************************************************************************************************
-    // function:    setVoxels
-    // ****************************************************************************************************************
-    // parameters:  bounds - the bounds
-    // ****************************************************************************************************************
-    //              voxel - the voxel
-    // ****************************************************************************************************************
-    // returns:     whether full
-    // ****************************************************************************************************************
-    public setVoxels(bounds: Bounds3, voxel: number): boolean {
-
-        if (this.intersects(bounds)) {
-
-            // ********************************************************************************************************
-            // this area
-            // ********************************************************************************************************
-
-            if (this.containsBox(bounds)) {
-
-                if (this.voxel = voxel) {
-
-                    this.collapseChildren();
-
-                    this.quad?.setDirty();
-
-                    return true;
-                }
-                return false;
-            }
-
-            // ********************************************************************************************************
-            // ensure children created if filling
-            // ********************************************************************************************************
-
-            if (voxel && this.children.length === 0) {
-
-                this.createChildren();
-            }
-
-            // ********************************************************************************************************
-            // process children
-            // ********************************************************************************************************
-
-            var numFull = 0, numEmpty = 0;
+        if (this.children.length) {
 
             for (var i = 0; i < this.children.length; i++) {
 
-                if (this.children[i].setVoxels(bounds, voxel)) numFull++; else numEmpty++;
+                this.children[i].createGeometry(builder);
             }
+        } else if (this.state) {
 
             // ********************************************************************************************************
-            // check all full
+            // obtain points
             // ********************************************************************************************************
 
-            if (numFull === this.children.length) {
+            const pointLDB = new Vector3(this.min.x, this.max.y, this.max.y);
 
-                this.children.find()
-            }
+            const pointRDB = new Vector3(this.max.x, this.max.y, this.max.y);
+
+            const pointLUB = new Vector3(this.min.x, this.min.y, this.max.y);
+
+            const pointRUB = new Vector3(this.max.x, this.min.y, this.max.y);
+
+            const pointLDF = new Vector3(this.min.x, this.max.y, this.min.y);
+
+            const pointRDF = new Vector3(this.max.x, this.max.y, this.min.y);
+
+            const pointLUF = new Vector3(this.min.x, this.min.y, this.min.y);
+
+            const pointRUF = new Vector3(this.max.x, this.min.y, this.min.y);
+
+            // ********************************************************************************************************
+            // obtain geometry
+            // ********************************************************************************************************
+
+            const positionLDB = new GeometryData(pointLDB);
+
+            const positionRDB = new GeometryData(pointRDB);
+
+            const positionLUB = new GeometryData(pointLUB);
+
+            const positionRUB = new GeometryData(pointRUB);
+
+            const positionLDF = new GeometryData(pointLDF);
+
+            const positionRDF = new GeometryData(pointRDF);
+
+            const positionLUF = new GeometryData(pointLUF);
+
+            const positionRUF = new GeometryData(pointRUF);
+
+            // ********************************************************************************************************
+            // create geometry
+            // ********************************************************************************************************
+
+            const indices = builder.addGeometries([positionLDB, positionRDB, positionLUB, positionRUB, positionLDF, positionRDF, positionLUF, positionRUF]);
+
+            builder.addIndices([indices[0], indices[1], indices[2], indices[2], indices[1], indices[3]]);
         }
+        this.dirty = false;
     }
 
+    // ****************************************************************************************************************
+    // function:    markDirty
+    // ****************************************************************************************************************
+    // parameters:  n/a
+    // ****************************************************************************************************************
+    // returns:     n/a
+    // ****************************************************************************************************************
+    private markDirty(): void {
 
-    /*
-        // ****************************************************************************************************************
-        // noise - the noise
-        // ****************************************************************************************************************
-        private static noise: NoiseFunction2D = createNoise2D();
-    
-        // ****************************************************************************************************************
-        // dirty - whether dirty
-        // ****************************************************************************************************************
-        public dirty: boolean = true;
-    
-        // ****************************************************************************************************************
-        // geometry - the geometry
-        // ****************************************************************************************************************
-        private geometry: BufferGeometry | null = null;
-    
-        // ****************************************************************************************************************
-        // material - the material
-        // ****************************************************************************************************************
-        private material: Material = new MeshStandardMaterial({ color: '#ffffff', wireframe: false });
-    
-        // ****************************************************************************************************************
-        // mesh - the mesh
-        // ****************************************************************************************************************
-        private mesh: InstancedMesh | null = null;
-    
-        // ****************************************************************************************************************
-        // size - the size
-        // ****************************************************************************************************************
-        private readonly size: number = 0;
-    
-        // ****************************************************************************************************************
-        // voxels - the voxels
-        // ****************************************************************************************************************
-        private voxels: number[][][] = [];
-    
-        // ****************************************************************************************************************
-        // constructor
-        // ****************************************************************************************************************
-        constructor(private readonly scene: Scene, public readonly location: Vector3, min: Vector3, max: Vector3) {
-    
-            super(min, max);
-    
-            this.size = max.x - min.x;
-    
-            this.createArray();
-    
-            if (max.y < 0) this.setVoxels(this, 1);
-    
-            else {
-    
-                for (var x = 0; x < this.size; x++) {
-    
-                    for (var y = 0; y < this.size; y++) {
-    
-                        for (var z = 0; z < this.size; z++) {
-    
-                            const height = VoxelGroup.noise(this.min.x + x / 256, this.min.z + z / 256) * this.size;
-    
-                            if (height > this.min.y + y) {
-    
-                                this.voxels[x][y][z] = 1;
-                            }
-                        }
-                    }
-                }
+        this.dirty = true;
+
+        if (this.children.length) {
+
+            if (this.children.every(ch => ch.state)) {
+
+                this.state = true;
+
+                this.children = [];
+            }
+            else if (this.children.every(ch => !ch.state)) {
+
+                this.state = false;
+
+                this.children = [];
             }
         }
-    
-        // ****************************************************************************************************************
-        // function:    createArray
-        // ****************************************************************************************************************
-        // parameters:  n/a
-        // ****************************************************************************************************************
-        // returns:     n/a
-        // ****************************************************************************************************************
-        private createArray(): void {
-    
-            for (var x = 0; x < this.size; x++) {
-    
-                this.voxels[x] = [];
-    
-                for (var y = 0; y < this.size; y++) {
-    
-                    this.voxels[x][y] = [];
-    
-                    for (var z = 0; z < this.size; z++) {
-    
-                        this.voxels[x][y][z] = 0;
-                    }
-                }
+        this.parent?.markDirty();
+    }
+
+    // ****************************************************************************************************************
+    // function:    setStates
+    // ****************************************************************************************************************
+    // parameters:  bounds - the bounds
+    // ****************************************************************************************************************
+    //              state - the state
+    // ****************************************************************************************************************
+    // returns:     whether changed
+    // ****************************************************************************************************************
+    public setStates(bounds: Bounds3, state: boolean): boolean {
+
+        if (this.intersects(bounds)) {
+
+            if (this.equals(bounds)) {
+
+                this.state = state;
+
+                this.markDirty();
+
+                return true;
             }
+            this.createChildren();
+
+            for (var i = 0; i < this.children.length; i++) {
+
+                const childBounds = this.children[i].constrain(bounds);
+
+                if (childBounds) this.children[i].setStates(childBounds, state)
+            }
+            return true;
         }
-    
-        // ****************************************************************************************************************
-        // function:    getVoxel
-        // ****************************************************************************************************************
-        // parameters:  position - the position
-        // ****************************************************************************************************************
-        // returns:     the voxel
-        // ****************************************************************************************************************
-        public getVoxel(position: Vector3): number {
-    
-            if (this.insideOrOnEdge(position)) {
-    
-                const x = position.x - this.min.x;
-    
-                const y = position.y - this.min.y;
-    
-                const z = position.z - this.min.z;
-    
-                return this.voxels[x][y][z];
-            }
-            return 0;
-        }
-    
-        // ****************************************************************************************************************
-        // function:    setVoxel
-        // ****************************************************************************************************************
-        // parameters:  position - the position
-        // ****************************************************************************************************************
-        //              voxel - the voxel
-        // ****************************************************************************************************************
-        // returns:     n/a
-        // ****************************************************************************************************************
-        public setVoxel(position: Vector3, voxel: number): void {
-    
-            if (this.insideOrOnEdge(position)) {
-    
-                const x = position.x - this.min.x;
-    
-                const y = position.y - this.min.y;
-    
-                const z = position.z - this.min.z;
-    
-                this.voxels[x][y][z] = voxel;
-    
-                this.dirty = true;
-            }
-        }
-    
-        // ****************************************************************************************************************
-        // function:    setVoxels
-        // ****************************************************************************************************************
-        // parameters:  bounds - the bounds
-        // ****************************************************************************************************************
-        //              voxel - the voxel
-        // ****************************************************************************************************************
-        // returns:     n/a
-        // ****************************************************************************************************************
-        public setVoxels(bounds: Bounds3, voxel: number): void {
-    
-            if (this.intersects(bounds)) {
-    
-                for (var x = bounds.min.x; x < bounds.max.x; x++) {
-    
-                    for (var y = bounds.min.y; y < bounds.max.y; y++) {
-    
-                        for (var z = bounds.min.z; z < bounds.max.z; z++) {
-    
-                            this.setVoxel(new Vector3(x, y, z), voxel);
-                        }
-                    }
-                }
-            }
-        }
-    
-        // ****************************************************************************************************************
-        // function:    updateGeometry
-        // ****************************************************************************************************************
-        // parameters:  n/a
-        // ****************************************************************************************************************
-        // returns:     n/a
-        // ****************************************************************************************************************
-        public updateGeometry(): void {
-    
-            if (!this.dirty) return;
-    
-            // ************************************************************************************************************
-            // update geometry
-            // ************************************************************************************************************
-    
-            this.geometry = this.geometry ?? new BoxGeometry(1, 1, 1, 1, 1, 1);
-    
-            const matrices: Matrix4[] = [];
-    
-            for (var x = 0; x < this.size; x++) {
-    
-                for (var y = 0; y < this.size; y++) {
-    
-                    for (var z = 0; z < this.size; z++) {
-    
-                        const voxel = this.voxels[x][y][z];
-    
-                        const voxelMinX = x > 0 ? this.voxels[x - 1][y][z] : null;
-    
-                        const voxelMaxX = x < this.size - 1 ? this.voxels[x + 1][y][z] : null;
-    
-                        const voxelMinY = y > 0 ? this.voxels[x][y - 1][z] : null;
-    
-                        const voxelMaxY = y < this.size - 1 ? this.voxels[x][y + 1][z] : null;
-    
-                        const voxelMinZ = z > 0 ? this.voxels[x][y][z - 1] : null;
-    
-                        const voxelMaxZ = z < this.size - 1 ? this.voxels[x][y][z + 1] : null;
-    
-                        if (voxel > 0 && (voxelMinX === null || voxelMaxX === null || voxelMinY === null || voxelMaxY === null || voxelMinZ === null || voxelMaxZ === null)) {
-    
-                            const matrix = new Matrix4();
-    
-                            matrix.setPosition(this.min.x + x, this.min.y + y, this.min.z + z);
-    
-                            matrices.push(matrix);
-                        }
-                    }
-                }
-            }
-    
-            // ************************************************************************************************************
-            // update mesh
-            // ************************************************************************************************************
-    
-            if (this.mesh) this.scene.remove(this.mesh);
-    
-            this.mesh = new InstancedMesh(this.geometry, this.material, matrices.length);
-    
-            for (var i = 0; i < matrices.length; i++) {
-    
-                this.mesh.setMatrixAt(i, matrices[i]);
-            }
-            this.scene.add(this.mesh);
-    
-            this.dirty = false;
-        }
-        */
+        return false;
+    }
 }

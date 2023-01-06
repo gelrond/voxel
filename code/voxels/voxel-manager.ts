@@ -1,6 +1,4 @@
 // ********************************************************************************************************************
-import { createNoise2D, NoiseFunction2D } from "simplex-noise";
-// ********************************************************************************************************************
 import { Scene } from "three";
 // ********************************************************************************************************************
 import { round } from "../helpers/math.helper";
@@ -10,11 +8,6 @@ import { Vector3 } from "../types/vector3";
 import { VoxelQuad } from "./voxel-quad";
 // ********************************************************************************************************************
 export class VoxelManager {
-
-    // ****************************************************************************************************************
-    // noise - the noise
-    // ****************************************************************************************************************
-    private readonly noise: NoiseFunction2D = createNoise2D();
 
     // ****************************************************************************************************************
     // quadSizeHalf - the quad size half
@@ -34,7 +27,7 @@ export class VoxelManager {
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(private readonly scene: Scene, private readonly quadSize: number = 32, private readonly quadsPerSide: number = 16) {
+    constructor(private readonly scene: Scene, private readonly quadSize: number = 8, private readonly quadsPerSide: number = 8) {
 
         this.quadSizeHalf = this.quadSize >> 1;
 
@@ -84,32 +77,9 @@ export class VoxelManager {
 
                         this.quads.push(quad);
 
-                        // ********************************************************************************************
-                        // populate quad
-                        // ********************************************************************************************
-
-                        if (max.y < 0) quad.setVoxels(quad, 1);
-
-                        else {
-
-                            for (var x = 0; x < quad.size; x++) {
-
-                                for (var y = 0; y < quad.size; y++) {
-
-                                    for (var z = 0; z < quad.size; z++) {
-
-                                        const height = this.noise(quad.min.x + x / 256, quad.min.z + z / 256) * quad.size;
-
-                                        if (height > quad.min.y + y) {
-
-                                            quad.setVoxel(x, y, z, 1);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        if (max.y < 0) quad.setStates(quad, true);
                     }
-                    if (quad.dirty) quad.updateGeometry();
+                    quad.update();
                 }
             }
         }
