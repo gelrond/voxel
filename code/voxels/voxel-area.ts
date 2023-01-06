@@ -115,52 +115,50 @@ export class VoxelArea extends Bounds3 {
         } else if (this.state) {
 
             // ********************************************************************************************************
-            // obtain points
+            // obtain positions
             // ********************************************************************************************************
 
-            const pointLDB = new Vector3(this.min.x, this.max.y, this.max.y);
+            const positionLdb = new Vector3(this.min.x, this.min.y, this.max.z);
 
-            const pointRDB = new Vector3(this.max.x, this.max.y, this.max.y);
+            const positionRdb = new Vector3(this.max.x, this.min.y, this.max.z);
 
-            const pointLUB = new Vector3(this.min.x, this.min.y, this.max.y);
+            const positionLub = new Vector3(this.min.x, this.max.y, this.max.z);
 
-            const pointRUB = new Vector3(this.max.x, this.min.y, this.max.y);
+            const positionRub = new Vector3(this.max.x, this.max.y, this.max.z);
 
-            const pointLDF = new Vector3(this.min.x, this.max.y, this.min.y);
+            const positionLdf = new Vector3(this.min.x, this.min.y, this.min.z);
 
-            const pointRDF = new Vector3(this.max.x, this.max.y, this.min.y);
+            const positionRdf = new Vector3(this.max.x, this.min.y, this.min.z);
 
-            const pointLUF = new Vector3(this.min.x, this.min.y, this.min.y);
+            const positionLuf = new Vector3(this.min.x, this.max.y, this.min.z);
 
-            const pointRUF = new Vector3(this.max.x, this.min.y, this.min.y);
+            const positionRuf = new Vector3(this.max.x, this.max.y, this.min.z);
 
             // ********************************************************************************************************
-            // obtain geometry
+            // obtain data
             // ********************************************************************************************************
 
-            const positionLDB = new GeometryData(pointLDB);
+            const dataLdb = new GeometryData(positionLdb);
 
-            const positionRDB = new GeometryData(pointRDB);
+            const dataRdb = new GeometryData(positionRdb);
 
-            const positionLUB = new GeometryData(pointLUB);
+            const dataLub = new GeometryData(positionLub);
 
-            const positionRUB = new GeometryData(pointRUB);
+            const dataRub = new GeometryData(positionRub);
 
-            const positionLDF = new GeometryData(pointLDF);
+            const dataLdf = new GeometryData(positionLdf);
 
-            const positionRDF = new GeometryData(pointRDF);
+            const dataRdf = new GeometryData(positionRdf);
 
-            const positionLUF = new GeometryData(pointLUF);
+            const dataLuf = new GeometryData(positionLuf);
 
-            const positionRUF = new GeometryData(pointRUF);
+            const dataRuf = new GeometryData(positionRuf);
 
             // ********************************************************************************************************
             // create geometry
             // ********************************************************************************************************
 
-            const indices = builder.addGeometries([positionLDB, positionRDB, positionLUB, positionRUB, positionLDF, positionRDF, positionLUF, positionRUF]);
-
-            builder.addIndices([indices[0], indices[1], indices[2], indices[2], indices[1], indices[3]]);
+            builder.addCube(dataLdb, dataRdb, dataLub, dataRub, dataLdf, dataRdf, dataLuf, dataRuf);
         }
         this.dirty = false;
     }

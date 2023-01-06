@@ -1,5 +1,5 @@
 // ********************************************************************************************************************
-import { Mesh, Scene } from 'three/src/Three';
+import { Mesh, MeshStandardMaterial, Scene } from 'three/src/Three';
 // ********************************************************************************************************************
 import { GeometryBuilder } from '../geometry/geometry-builder';
 // ********************************************************************************************************************
@@ -38,7 +38,11 @@ export class VoxelQuad extends VoxelArea {
 
             const geometry = builder.generate();
 
-            this.mesh = new Mesh(geometry);
+            const material = new MeshStandardMaterial({ color: 'f0f0f0', roughness: 0.5 });
+
+            geometry.computeVertexNormals();
+
+            this.mesh = new Mesh(geometry, material);
 
             this.scene.add(this.mesh);
         }

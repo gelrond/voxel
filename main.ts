@@ -1,5 +1,5 @@
 // ********************************************************************************************************************
-import { Color, DirectionalLight, PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import { Color, DirectionalLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 // ********************************************************************************************************************
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // ********************************************************************************************************************
@@ -56,6 +56,6 @@ function resize() {
 function update() {
     requestAnimationFrame(update);
     renderer.render(scene, camera);
-    voxels.update(camera.position);
+    voxels.update(new Vector3());
 }
 initialise();
