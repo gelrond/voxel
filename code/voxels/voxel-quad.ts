@@ -1,5 +1,5 @@
 // ********************************************************************************************************************
-import { Mesh, MeshStandardMaterial, Scene, Vector2 } from 'three/src/Three';
+import { Mesh, MeshStandardMaterial, Scene, TextureLoader, Vector2 } from 'three/src/Three';
 // ********************************************************************************************************************
 import { GeometryBuilder } from '../geometry/geometry-builder';
 // ********************************************************************************************************************
@@ -405,9 +405,11 @@ export class VoxelQuad extends Bounds3 {
 
                 const geometry = builder.generate();
 
-                geometry.normalizeNormals();
+                geometry.computeVertexNormals();
 
-                const material = new MeshStandardMaterial({ color: '#f0fff0', roughness: 1.0, wireframe: false });
+                const texture = new TextureLoader().load('/resources/voxel.png');
+
+                const material = new MeshStandardMaterial({ color: '#ffffff', map: texture, roughness: 0.5, wireframe: false });
 
                 this.mesh = new Mesh(geometry, material);
 

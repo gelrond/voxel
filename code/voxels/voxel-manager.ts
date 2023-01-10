@@ -34,7 +34,7 @@ export class VoxelManager {
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(private readonly scene: Scene, private readonly quadSize: number = 16, private readonly quadsPerSide: number = 8) {
+    constructor(private readonly scene: Scene, private readonly quadSize: number = 8, private readonly quadsPerSide: number = 8) {
 
         this.quadSizeHalf = this.quadSize >> 1;
 
@@ -56,7 +56,9 @@ export class VoxelManager {
 
         for (var x = lx - this.quadsPerSideHalf; x <= lx + this.quadsPerSideHalf; x++) {
 
-            for (var y = - this.quadsPerSideHalf; y <= + this.quadsPerSideHalf; y++) {
+            for (var y = -this.quadsPerSideHalf; y <= this.quadsPerSideHalf; y++) {
+
+                if (y < 0) continue;
 
                 for (var z = lz - this.quadsPerSideHalf; z <= lz + this.quadsPerSideHalf; z++) {
 
@@ -96,7 +98,7 @@ export class VoxelManager {
 
                                 for (var iz = min.z; iz <= max.z; iz++) {
 
-                                    const height = this.noise(ix / 32, iz / 32) * 32;
+                                    const height = this.noise(ix / 32, iz / 32) * 20;
 
                                     for (var iy = min.y; iy <= max.y; iy++) {
 
@@ -105,8 +107,8 @@ export class VoxelManager {
                                 }
                             }
                         }
+                        quad.update();
                     }
-                    quad.update();
                 }
             }
         }
