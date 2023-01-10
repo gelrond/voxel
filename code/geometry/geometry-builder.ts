@@ -1,6 +1,10 @@
 // ********************************************************************************************************************
 import { BufferAttribute, BufferGeometry } from 'three';
 // ********************************************************************************************************************
+import { Bounds3 } from '../types/bounds3';
+// ********************************************************************************************************************
+import { Vector3 } from '../types/vector3';
+// ********************************************************************************************************************
 import { GeometryData } from './geometry-data';
 // ********************************************************************************************************************
 import { GeometryDataList } from './geometry-data-list';
@@ -56,6 +60,58 @@ export class GeometryBuilder {
         this.addQuad(dataLub, dataRub, dataLuf, dataRuf); // U
 
         this.addQuad(dataLdf, dataRdf, dataLdb, dataRdb); // D
+    }
+
+    // ****************************************************************************************************************
+    // function:    addCubeFromBounds
+    // ****************************************************************************************************************
+    // parameters:  bounds - the bounds
+    // ****************************************************************************************************************
+    // returns:     the index
+    // ****************************************************************************************************************
+    public addCubeFromBounds(bounds: Bounds3): void {
+
+        // ************************************************************************************************************
+        // obtain points
+        // ************************************************************************************************************
+
+        const pointLdb = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
+
+        const pointRdb = new Vector3(bounds.max.x, bounds.min.y, bounds.max.z);
+
+        const pointLub = new Vector3(bounds.min.x, bounds.max.y, bounds.max.z);
+
+        const pointRub = new Vector3(bounds.max.x, bounds.max.y, bounds.max.z);
+
+        const pointLdf = new Vector3(bounds.min.x, bounds.min.y, bounds.min.z);
+
+        const pointRdf = new Vector3(bounds.max.x, bounds.min.y, bounds.min.z);
+
+        const pointLuf = new Vector3(bounds.min.x, bounds.max.y, bounds.min.z);
+
+        const pointRuf = new Vector3(bounds.max.x, bounds.max.y, bounds.min.z);
+
+        // ************************************************************************************************************
+        // obtain data
+        // ************************************************************************************************************
+
+        const dataLdb = new GeometryData(pointLdb);
+
+        const dataRdb = new GeometryData(pointRdb);
+
+        const dataLub = new GeometryData(pointLub);
+
+        const dataRub = new GeometryData(pointRub);
+
+        const dataLdf = new GeometryData(pointLdf);
+
+        const dataRdf = new GeometryData(pointRdf);
+
+        const dataLuf = new GeometryData(pointLuf);
+
+        const dataRuf = new GeometryData(pointRuf);
+
+        this.addCube(dataLdb, dataRdb, dataLub, dataRub, dataLdf, dataRdf, dataLuf, dataRuf);
     }
 
     // ****************************************************************************************************************

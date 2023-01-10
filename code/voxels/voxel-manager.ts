@@ -1,4 +1,6 @@
 // ********************************************************************************************************************
+import { createNoise2D, NoiseFunction2D } from "simplex-noise";
+// ********************************************************************************************************************
 import { Scene } from "three";
 // ********************************************************************************************************************
 import { round } from "../helpers/math.helper";
@@ -8,6 +10,11 @@ import { Vector3 } from "../types/vector3";
 import { VoxelQuad } from "./voxel-quad";
 // ********************************************************************************************************************
 export class VoxelManager {
+
+    // ****************************************************************************************************************
+    // noise - the noise
+    // ****************************************************************************************************************
+    private readonly noise: NoiseFunction2D = createNoise2D();
 
     // ****************************************************************************************************************
     // quadSizeHalf - the quad size half
@@ -27,7 +34,7 @@ export class VoxelManager {
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(private readonly scene: Scene, private readonly quadSize: number = 64, private readonly quadsPerSide: number = 8) {
+    constructor(private readonly scene: Scene, private readonly quadSize: number = 16, private readonly quadsPerSide: number = 4) {
 
         this.quadSizeHalf = this.quadSize >> 1;
 
@@ -77,7 +84,23 @@ export class VoxelManager {
 
                         this.quads.push(quad);
 
-                        if (max.y < 0) quad.setStates(quad, true);
+                        if (min.y <= 0) quad.setVoxels(true);
+
+                        if (max.y <= 16) {
+
+                            for (var ix = min.x; ix <= max.x; ix++) {
+
+                                for (var iy = 0; iy <= 16; iy++) {
+
+                                    for (var iz = min.z; iz <= max.z; iz++) {
+
+                                        const noise = this.noise(ix / 64, iz / 64);
+
+                                        quad.setVoxelAt(ix, iy, iz, noise > 0);
+                                    }
+                                }
+                            }
+                        }
                     }
                     quad.update();
                 }

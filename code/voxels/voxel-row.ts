@@ -1,130 +1,106 @@
 // ********************************************************************************************************************
-import * as THREE from 'three';
+import { GeometryBuilder } from "../geometry/geometry-builder";
 // ********************************************************************************************************************
-import { max, min } from '../helpers/math.helper';
+import { Bounds3 } from "../types/bounds3";
 // ********************************************************************************************************************
-import { IEquality } from '../shared/equality.interface';
+import { Vector3 } from "../types/vector3";
 // ********************************************************************************************************************
-import { Vector3 } from "./vector3";
+import { VoxelArray } from "./voxel-array";
 // ********************************************************************************************************************
-export class Bounds3 extends THREE.Box3 implements IEquality<Bounds3> {
-
-    // ****************************************************************************************************************
-    // sizeX - the size x
-    // ****************************************************************************************************************
-    public get sizeX(): number { return this.max.x - this.min.x; }
-
-    // ****************************************************************************************************************
-    // sizeY - the size y
-    // ****************************************************************************************************************
-    public get sizeY(): number { return this.max.y - this.min.y; }
-
-    // ****************************************************************************************************************
-    // sizeZ - the size z
-    // ****************************************************************************************************************
-    public get sizeZ(): number { return this.max.z - this.min.z; }
+export class VoxelQuadRow extends VoxelArray<boolean> {
 
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(min: Vector3, max: Vector3) { super(min, max); }
+    constructor(size: number) { super(size); }
 
     // ****************************************************************************************************************
-    // function:    constrain
+    // function:    createElement
     // ****************************************************************************************************************
-    // parameters:  bounds - the bounds
+    // parameters:  n/a
     // ****************************************************************************************************************
-    // returns:     the constrained bounds or null
+    // returns:     the element
     // ****************************************************************************************************************
-    public constrain(bounds: Bounds3): Bounds3 | null {
+    protected override createElement(): boolean { return true; }
 
-        if (bounds) {
+    // ****************************************************************************************************************
+    // function:    createGeometry
+    // ****************************************************************************************************************
+    // parameters:  builder - the builder
+    // ****************************************************************************************************************
+    //              bounds - the bounds
+    // ****************************************************************************************************************
+    // returns:     n/a
+    // ****************************************************************************************************************
+    public createGeometry(builder: GeometryBuilder, bounds: Bounds3): void {
 
-            if (this.intersects(bounds)) {
+        if (this.getVoxels()) {
 
-                const x1 = max(this.min.x, bounds.min.x);
+            builder.addCubeFromBounds(bounds);
 
-                const y1 = max(this.min.y, bounds.min.y);
+        } else if (this.elements.length) {
 
-                const z1 = max(this.min.z, bounds.min.z);
+            for (var index = 0; index < this.size; index++) {
 
-                const minimum = new Vector3(x1, y1, z1);
+                if (this.elements[index]) {
 
-                const x2 = min(this.max.x, bounds.max.x);
+                    const min = new Vector3(bounds.min.x, bounds.min.y, bounds.min.z + index - 0.5);
 
-                const y2 = min(this.max.y, bounds.max.y);
+                    const max = new Vector3(bounds.max.x, bounds.max.y, bounds.min.z + index + 0.5);
 
-                const z2 = min(this.max.z, bounds.max.z);
-
-                const maximum = new Vector3(x2, y2, z2);
-
-                return new Bounds3(minimum, maximum);
+                    builder.addCubeFromBounds(new Bounds3(min, max));
+                }
             }
         }
-        return null;
     }
 
     // ****************************************************************************************************************
-    // function:    insideOrOnEdge
+    // function:    getVoxel
     // ****************************************************************************************************************
-    // parameters:  vector - the vector
+    // parameters:  index - the index
     // ****************************************************************************************************************
-    // returns:     whether inside or on the edge
+    // returns:     the voxel
     // ****************************************************************************************************************
-    public insideOrOnEdge(vector: Vector3): boolean {
+    public getVoxel(index: number): boolean {
 
-        if (vector) {
-
-            if (vector.x < this.min.x) return false;
-
-            if (vector.y < this.min.y) return false;
-
-            if (vector.z < this.min.z) return false;
-
-            if (vector.x > this.max.x) return false;
-
-            if (vector.y > this.max.y) return false;
-
-            if (vector.z > this.max.z) return false;
-        }
-        return true;
+        return this.get(index, true) ?? false;
     }
 
     // ****************************************************************************************************************
-    // function:    intersects
+    // function:    getVoxels
     // ****************************************************************************************************************
-    // parameters:  bounds - the bounds
+    // parameters:  n/a
     // ****************************************************************************************************************
-    // returns:     whether intersects
+    // returns:     the voxels
     // ****************************************************************************************************************
-    public intersects(bounds: Bounds3): boolean {
+    public getVoxels(): boolean {
 
-        if (bounds) {
-
-            if (bounds.max.x < this.min.x) return false;
-
-            if (bounds.max.y < this.min.y) return false;
-
-            if (bounds.max.z < this.min.z) return false;
-
-            if (bounds.min.x > this.max.x) return false;
-
-            if (bounds.min.y > this.max.y) return false;
-
-            if (bounds.min.z > this.max.z) return false;
-        }
-        return true;
+        return this.elements.length > 0 && this.elements.every(el => el === true);
     }
 
     // ****************************************************************************************************************
-    // function:    outside
+    // function:    setVoxel
     // ****************************************************************************************************************
-    // parameters:  vector - the vector
+    // parameters:  index - the index
     // ****************************************************************************************************************
-    // returns:     whether outside
+    //              voxel - the voxel
     // ****************************************************************************************************************
-    public outside(vector: Vector3): boolean {
+    // returns:     whether changed
+    // ****************************************************************************************************************
+    public setVoxel(index: number, voxel: boolean): boolean {
 
-        return !this.insideOrOnEdge(vector);
+        return this.set(index, voxel);
+    }
+
+    // ****************************************************************************************************************
+    // function:    setVoxels
+    // ****************************************************************************************************************
+    // parameters:  voxel - the voxel
+    // ****************************************************************************************************************
+    // returns:     whether changed
+    // ****************************************************************************************************************
+    public setVoxels(voxel: boolean): boolean {
+
+        return this.fill(voxel);
     }
 }
