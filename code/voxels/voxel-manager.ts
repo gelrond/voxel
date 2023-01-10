@@ -84,19 +84,23 @@ export class VoxelManager {
 
                         this.quads.push(quad);
 
+                        // ********************************************************************************************
+                        // populate voxels
+                        // ********************************************************************************************
+
                         if (min.y <= 0) quad.setVoxels(true);
 
-                        if (max.y <= 16) {
+                        else if (max.y <= 32) {
 
                             for (var ix = min.x; ix <= max.x; ix++) {
 
-                                for (var iy = 0; iy <= max.y; iy++) {
+                                for (var iz = min.z; iz <= max.z; iz++) {
 
-                                    for (var iz = min.z; iz <= max.z; iz++) {
+                                    const height = this.noise(ix / 32, iz / 32) * 32;
 
-                                        const noise = this.noise(ix / 32, iz / 32);
+                                    for (var iy = min.y; iy <= max.y; iy++) {
 
-                                        quad.setVoxel(ix, iy, iz, noise > 0);
+                                        if (iy < height) quad.setVoxel(ix, iy, iz, true);
                                     }
                                 }
                             }

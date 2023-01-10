@@ -1,7 +1,8 @@
 // ********************************************************************************************************************
-import { DataTextureLoader, Mesh, MeshStandardMaterial, Scene } from 'three/src/Three';
+import { Mesh, MeshStandardMaterial, Scene, Vector2 } from 'three/src/Three';
 // ********************************************************************************************************************
 import { GeometryBuilder } from '../geometry/geometry-builder';
+// ********************************************************************************************************************
 import { GeometryData } from '../geometry/geometry-data';
 // ********************************************************************************************************************
 import { Bounds3 } from '../types/bounds3';
@@ -21,6 +22,56 @@ export class VoxelQuad extends Bounds3 {
     private mesh: Mesh | null = null;
 
     // ****************************************************************************************************************
+    // vectorMaxX - the vector max x
+    // ****************************************************************************************************************
+    private static vectorMaxX: Vector3 = new Vector3(1, 0, 0);
+
+    // ****************************************************************************************************************
+    // vectorMaxY - the vector max x
+    // ****************************************************************************************************************
+    private static vectorMaxY: Vector3 = new Vector3(0, 1, 0);
+
+    // ****************************************************************************************************************
+    // vectorMaxZ - the vector max z
+    // ****************************************************************************************************************
+    private static vectorMaxZ: Vector3 = new Vector3(0, 0, 1);
+
+    // ****************************************************************************************************************
+    // vectorMinX - the vector min x
+    // ****************************************************************************************************************
+    private static vectorMinX: Vector3 = new Vector3(-1, 0, 0);
+
+    // ****************************************************************************************************************
+    // vectorMinY - the vector min y
+    // ****************************************************************************************************************
+    private static vectorMinY: Vector3 = new Vector3(0, -1, 0);
+
+    // ****************************************************************************************************************
+    // vectorMinZ - the vector min z
+    // ****************************************************************************************************************
+    private static vectorMinZ: Vector3 = new Vector3(0, 0, -1);
+
+    // ****************************************************************************************************************
+    // vectorUv1 - the vector uv 1
+    // ****************************************************************************************************************
+    private static vectorUv1: Vector2 = new Vector2(0, 0);
+
+    // ****************************************************************************************************************
+    // vectorUv2 - the vector uv 2
+    // ****************************************************************************************************************
+    private static vectorUv2: Vector2 = new Vector2(1, 0);
+
+    // ****************************************************************************************************************
+    // vectorUv3 - the vector uv 3
+    // ****************************************************************************************************************
+    private static vectorUv3: Vector2 = new Vector2(0, 1);
+
+    // ****************************************************************************************************************
+    // vectorUv4 - the vector uv 4
+    // ****************************************************************************************************************
+    private static vectorUv4: Vector2 = new Vector2(1, 1);
+
+    // ****************************************************************************************************************
     // voxels - the voxels
     // ****************************************************************************************************************
     private voxels: boolean[][][] = [];
@@ -33,35 +84,46 @@ export class VoxelQuad extends Bounds3 {
     // ****************************************************************************************************************
     // function:    createArray
     // ****************************************************************************************************************
-    // parameters:  n/a
+    // parameters:  voxel - the voxel
     // ****************************************************************************************************************
     // returns:     n/a
     // ****************************************************************************************************************
-    private createArray(): void {
+    private createArray(voxel: boolean | null = null): void {
 
         if (this.voxels.length === 0) {
 
             this.voxels.length = this.sizeX;
 
             // *********************************************************************************************************
-            // create axis 1
+            // create array 1
             // *********************************************************************************************************
 
-            for (var x = 0; x < this.voxels.length; x++) {
+            for (var x = 0; x < this.sizeX; x++) {
 
                 this.voxels[x] = [];
 
                 this.voxels[x].length = this.sizeY;
 
                 // *****************************************************************************************************
-                // create axis 2
+                // create array 2
                 // *****************************************************************************************************
 
-                for (var y = 0; y < this.voxels.length; y++) {
+                for (var y = 0; y < this.sizeY; y++) {
 
                     this.voxels[x][y] = [];
 
                     this.voxels[x][y].length = this.sizeZ;
+
+                    if (voxel === null) continue;
+
+                    // *************************************************************************************************
+                    // create array 3
+                    // *************************************************************************************************
+
+                    for (var z = 0; z < this.sizeZ; z++) {
+
+                        this.voxels[x][y][z] = voxel;
+                    }
                 }
             }
         }
@@ -77,6 +139,8 @@ export class VoxelQuad extends Bounds3 {
     public createGeometry(builder: GeometryBuilder): void {
 
         if (this.voxels.length) {
+
+            const half = 0.5;
 
             for (var x = 0; x < this.sizeX; x++) {
 
@@ -97,105 +161,105 @@ export class VoxelQuad extends Bounds3 {
                             const wz = this.min.z + z;
 
                             // ****************************************************************************************
-                            // left
+                            // min x
                             // ****************************************************************************************
 
                             if (x === 0 || !this.voxels[x - 1][y][z]) {
 
-                                const dataLub = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz - 0.5));
+                                const dataLub = new GeometryData(new Vector3(wx - half, wy + half, wz - half), VoxelQuad.vectorUv1, VoxelQuad.vectorMinX);
 
-                                const dataLuf = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz + 0.5));
+                                const dataLuf = new GeometryData(new Vector3(wx - half, wy + half, wz + half), VoxelQuad.vectorUv2, VoxelQuad.vectorMinX);
 
-                                const dataLdb = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz - 0.5));
+                                const dataLdb = new GeometryData(new Vector3(wx - half, wy - half, wz - half), VoxelQuad.vectorUv3, VoxelQuad.vectorMinX);
 
-                                const dataLdf = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz + 0.5));
+                                const dataLdf = new GeometryData(new Vector3(wx - half, wy - half, wz + half), VoxelQuad.vectorUv4, VoxelQuad.vectorMinX);
 
                                 builder.addQuad(dataLub, dataLuf, dataLdb, dataLdf);
                             }
 
                             // ****************************************************************************************
-                            // right
+                            // max x
                             // ****************************************************************************************
 
                             if (x === this.sizeX - 1 || !this.voxels[x + 1][y][z]) {
 
-                                const dataRuf = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz + 0.5));
+                                const dataRuf = new GeometryData(new Vector3(wx + half, wy + half, wz + half), VoxelQuad.vectorUv1, VoxelQuad.vectorMaxX);
 
-                                const dataRub = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz - 0.5));
+                                const dataRub = new GeometryData(new Vector3(wx + half, wy + half, wz - half), VoxelQuad.vectorUv2, VoxelQuad.vectorMaxX);
 
-                                const dataRdf = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz + 0.5));
+                                const dataRdf = new GeometryData(new Vector3(wx + half, wy - half, wz + half), VoxelQuad.vectorUv3, VoxelQuad.vectorMaxX);
 
-                                const dataRdb = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz - 0.5));
+                                const dataRdb = new GeometryData(new Vector3(wx + half, wy - half, wz - half), VoxelQuad.vectorUv4, VoxelQuad.vectorMaxX);
 
                                 builder.addQuad(dataRuf, dataRub, dataRdf, dataRdb);
                             }
 
                             // ****************************************************************************************
-                            // up
-                            // ****************************************************************************************
-
-                            if (y === this.sizeY - 1 || !this.voxels[x][y + 1][z]) {
-
-                                const dataLub = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz - 0.5));
-
-                                const dataRub = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz - 0.5));
-
-                                const dataLuf = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz + 0.5));
-
-                                const dataRuf = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz + 0.5));
-
-                                builder.addQuad(dataLub, dataRub, dataLuf, dataRuf);
-                            }
-
-                            // ****************************************************************************************
-                            // down
+                            // min y
                             // ****************************************************************************************
 
                             if (y === 0 || !this.voxels[x][y - 1][z]) {
 
-                                const dataRdb = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz - 0.5));
+                                const dataRdb = new GeometryData(new Vector3(wx + half, wy - half, wz - half), VoxelQuad.vectorUv1, VoxelQuad.vectorMinY);
 
-                                const dataLdb = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz - 0.5));
+                                const dataLdb = new GeometryData(new Vector3(wx - half, wy - half, wz - half), VoxelQuad.vectorUv2, VoxelQuad.vectorMinY);
 
-                                const dataRdf = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz + 0.5));
+                                const dataRdf = new GeometryData(new Vector3(wx + half, wy - half, wz + half), VoxelQuad.vectorUv3, VoxelQuad.vectorMinY);
 
-                                const dataLdf = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz + 0.5));
+                                const dataLdf = new GeometryData(new Vector3(wx - half, wy - half, wz + half), VoxelQuad.vectorUv4, VoxelQuad.vectorMinY);
 
                                 builder.addQuad(dataRdb, dataLdb, dataRdf, dataLdf);
                             }
 
                             // ****************************************************************************************
-                            // front
+                            // max y
                             // ****************************************************************************************
 
-                            if (z === this.sizeZ - 1 || !this.voxels[x][y][z + 1]) {
+                            if (y === this.sizeY - 1 || !this.voxels[x][y + 1][z]) {
 
-                                const dataLuf = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz + 0.5));
+                                const dataLub = new GeometryData(new Vector3(wx - half, wy + half, wz - half), VoxelQuad.vectorUv1, VoxelQuad.vectorMaxY);
 
-                                const dataRuf = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz + 0.5));
+                                const dataRub = new GeometryData(new Vector3(wx + half, wy + half, wz - half), VoxelQuad.vectorUv2, VoxelQuad.vectorMaxY);
 
-                                const dataLdf = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz + 0.5));
+                                const dataLuf = new GeometryData(new Vector3(wx - half, wy + half, wz + half), VoxelQuad.vectorUv3, VoxelQuad.vectorMaxY);
 
-                                const dataRdf = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz + 0.5));
+                                const dataRuf = new GeometryData(new Vector3(wx + half, wy + half, wz + half), VoxelQuad.vectorUv4, VoxelQuad.vectorMaxY);
 
-                                builder.addQuad(dataLuf, dataRuf, dataLdf, dataRdf);
+                                builder.addQuad(dataLub, dataRub, dataLuf, dataRuf);
                             }
 
                             // ****************************************************************************************
-                            // back
+                            // min z
                             // ****************************************************************************************
 
                             if (z === 0 || !this.voxels[x][y][z - 1]) {
 
-                                const dataRub = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz - 0.5));
+                                const dataRub = new GeometryData(new Vector3(wx + half, wy + half, wz - half), VoxelQuad.vectorUv1, VoxelQuad.vectorMinZ);
 
-                                const dataLub = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz - 0.5));
+                                const dataLub = new GeometryData(new Vector3(wx - half, wy + half, wz - half), VoxelQuad.vectorUv2, VoxelQuad.vectorMinZ);
 
-                                const dataRdb = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz - 0.5));
+                                const dataRdb = new GeometryData(new Vector3(wx + half, wy - half, wz - half), VoxelQuad.vectorUv3, VoxelQuad.vectorMinZ);
 
-                                const dataLdb = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz - 0.5));
+                                const dataLdb = new GeometryData(new Vector3(wx - half, wy - half, wz - half), VoxelQuad.vectorUv4, VoxelQuad.vectorMinZ);
 
                                 builder.addQuad(dataRub, dataLub, dataRdb, dataLdb);
+                            }
+
+                            // ****************************************************************************************
+                            // max z
+                            // ****************************************************************************************
+
+                            if (z === this.sizeZ - 1 || !this.voxels[x][y][z + 1]) {
+
+                                const dataLuf = new GeometryData(new Vector3(wx - half, wy + half, wz + half), VoxelQuad.vectorUv1, VoxelQuad.vectorMaxZ);
+
+                                const dataRuf = new GeometryData(new Vector3(wx + half, wy + half, wz + half), VoxelQuad.vectorUv2, VoxelQuad.vectorMaxZ);
+
+                                const dataLdf = new GeometryData(new Vector3(wx - half, wy - half, wz + half), VoxelQuad.vectorUv3, VoxelQuad.vectorMaxZ);
+
+                                const dataRdf = new GeometryData(new Vector3(wx + half, wy - half, wz + half), VoxelQuad.vectorUv4, VoxelQuad.vectorMaxZ);
+
+                                builder.addQuad(dataLuf, dataRuf, dataLdf, dataRdf);
                             }
                         }
                     }
@@ -292,11 +356,14 @@ export class VoxelQuad extends Bounds3 {
     // ****************************************************************************************************************
     private setVoxelInternal(x: number, y: number, z: number, voxel: boolean): void {
 
-        this.createArray();
+        if (voxel) this.createArray();
 
-        this.voxels[x][y][z] = voxel;
+        if (this.voxels.length) {
 
-        this.dirty = true;
+            this.voxels[x][y][z] = voxel;
+
+            this.dirty = true;
+        }
     }
 
     // ****************************************************************************************************************
@@ -308,15 +375,11 @@ export class VoxelQuad extends Bounds3 {
     // ****************************************************************************************************************
     public setVoxels(voxel: boolean): void {
 
-        this.createArray();
+        this.voxels = [];
 
-        for (var x = 0; x < this.sizeX; x++) {
+        this.createArray(voxel);
 
-            for (var y = 0; y < this.sizeY; y++) {
-
-                this.voxels[x][y].fill(voxel);
-            }
-        }
+        this.dirty = true;
     }
 
     // ****************************************************************************************************************
@@ -342,9 +405,9 @@ export class VoxelQuad extends Bounds3 {
 
                 const geometry = builder.generate();
 
-                const material = new MeshStandardMaterial({ color: '#f0fff0', roughness: 1.0, wireframe: false });
+                geometry.normalizeNormals();
 
-                geometry.computeVertexNormals();
+                const material = new MeshStandardMaterial({ color: '#f0fff0', roughness: 1.0, wireframe: false });
 
                 this.mesh = new Mesh(geometry, material);
 
