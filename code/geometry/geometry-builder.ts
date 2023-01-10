@@ -12,6 +12,11 @@ import { GeometryDataList } from './geometry-data-list';
 export class GeometryBuilder {
 
     // ****************************************************************************************************************
+    // valid - whether valid
+    // ****************************************************************************************************************
+    public get valid(): boolean { return this.indices.length > 0; }
+
+    // ****************************************************************************************************************
     // geometry - the geometry
     // ****************************************************************************************************************
     private readonly geometry: GeometryDataList = new GeometryDataList();
@@ -179,7 +184,7 @@ export class GeometryBuilder {
 
         const indices = this.addGeometries([dataTl, dataTr, dataBl, dataBr]);
 
-        this.addIndices([indices[0], indices[1], indices[2], indices[2], indices[1], indices[3]]);
+        this.addIndices([indices[0], indices[2], indices[1], indices[1], indices[2], indices[3]]);
     }
 
     // ****************************************************************************************************************

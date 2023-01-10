@@ -1,22 +1,14 @@
 // ********************************************************************************************************************
-import { Mesh, MeshBasicMaterial, MeshStandardMaterial, Scene } from 'three/src/Three';
+import { DataTextureLoader, Mesh, MeshStandardMaterial, Scene } from 'three/src/Three';
 // ********************************************************************************************************************
 import { GeometryBuilder } from '../geometry/geometry-builder';
+import { GeometryData } from '../geometry/geometry-data';
 // ********************************************************************************************************************
 import { Bounds3 } from '../types/bounds3';
 // ********************************************************************************************************************
 import { Vector3 } from '../types/vector3';
 // ********************************************************************************************************************
-import { VoxelArray } from './voxel-array';
-// ********************************************************************************************************************
-import { VoxelSlice } from './voxel-slice';
-// ********************************************************************************************************************
-export class VoxelQuad extends VoxelArray<VoxelSlice> {
-
-    // ****************************************************************************************************************
-    // bounds - the bounds
-    // ****************************************************************************************************************
-    private bounds: Bounds3;
+export class VoxelQuad extends Bounds3 {
 
     // ****************************************************************************************************************
     // dirty - whether dirty
@@ -29,18 +21,51 @@ export class VoxelQuad extends VoxelArray<VoxelSlice> {
     private mesh: Mesh | null = null;
 
     // ****************************************************************************************************************
-    // constructor
+    // voxels - the voxels
     // ****************************************************************************************************************
-    constructor(private readonly scene: Scene, public readonly location: Vector3, min: Vector3, max: Vector3) { super(max.y - min.y); this.bounds = new Bounds3(min, max); }
+    private voxels: boolean[][][] = [];
 
     // ****************************************************************************************************************
-    // function:    createElement
+    // constructor
+    // ****************************************************************************************************************
+    constructor(private readonly scene: Scene, public readonly location: Vector3, min: Vector3, max: Vector3) { super(min, max); }
+
+    // ****************************************************************************************************************
+    // function:    createArray
     // ****************************************************************************************************************
     // parameters:  n/a
     // ****************************************************************************************************************
-    // returns:     the element
+    // returns:     n/a
     // ****************************************************************************************************************
-    protected createElement(): VoxelSlice { return new VoxelSlice(this.size); }
+    private createArray(): void {
+
+        if (this.voxels.length === 0) {
+
+            this.voxels.length = this.sizeX;
+
+            // *********************************************************************************************************
+            // create axis 1
+            // *********************************************************************************************************
+
+            for (var x = 0; x < this.voxels.length; x++) {
+
+                this.voxels[x] = [];
+
+                this.voxels[x].length = this.sizeY;
+
+                // *****************************************************************************************************
+                // create axis 2
+                // *****************************************************************************************************
+
+                for (var y = 0; y < this.voxels.length; y++) {
+
+                    this.voxels[x][y] = [];
+
+                    this.voxels[x][y].length = this.sizeZ;
+                }
+            }
+        }
+    }
 
     // ****************************************************************************************************************
     // function:    createGeometry
@@ -51,21 +76,129 @@ export class VoxelQuad extends VoxelArray<VoxelSlice> {
     // ****************************************************************************************************************
     public createGeometry(builder: GeometryBuilder): void {
 
-        if (this.getVoxels()) {
+        if (this.voxels.length) {
 
-            builder.addCubeFromBounds(this.bounds);
+            for (var x = 0; x < this.sizeX; x++) {
 
-        } else if (this.elements.length) {
+                for (var y = 0; y < this.sizeY; y++) {
 
-            for (var slice = 0; slice < this.size; slice++) {
+                    for (var z = 0; z < this.sizeZ; z++) {
 
-                if (this.elements[slice]) {
+                        if (this.voxels[x][y][z]) {
 
-                    const min = new Vector3(this.bounds.min.x + slice - 0.5, this.bounds.min.y, this.bounds.min.z);
+                            // ****************************************************************************************
+                            // world
+                            // ****************************************************************************************
 
-                    const max = new Vector3(this.bounds.min.x + slice + 0.5, this.bounds.max.y, this.bounds.max.z);
+                            const wx = this.min.x + x;
 
-                    this.elements[slice].createGeometry(builder, new Bounds3(min, max));
+                            const wy = this.min.y + y;
+
+                            const wz = this.min.z + z;
+
+                            // ****************************************************************************************
+                            // left
+                            // ****************************************************************************************
+
+                            if (x === 0 || !this.voxels[x - 1][y][z]) {
+
+                                const dataLub = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz - 0.5));
+
+                                const dataLuf = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz + 0.5));
+
+                                const dataLdb = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz - 0.5));
+
+                                const dataLdf = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz + 0.5));
+
+                                builder.addQuad(dataLub, dataLuf, dataLdb, dataLdf);
+                            }
+
+                            // ****************************************************************************************
+                            // right
+                            // ****************************************************************************************
+
+                            if (x === this.sizeX - 1 || !this.voxels[x + 1][y][z]) {
+
+                                const dataRuf = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz + 0.5));
+
+                                const dataRub = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz - 0.5));
+
+                                const dataRdf = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz + 0.5));
+
+                                const dataRdb = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz - 0.5));
+
+                                builder.addQuad(dataRuf, dataRub, dataRdf, dataRdb);
+                            }
+
+                            // ****************************************************************************************
+                            // up
+                            // ****************************************************************************************
+
+                            if (y === this.sizeY - 1 || !this.voxels[x][y + 1][z]) {
+
+                                const dataLub = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz - 0.5));
+
+                                const dataRub = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz - 0.5));
+
+                                const dataLuf = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz + 0.5));
+
+                                const dataRuf = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz + 0.5));
+
+                                builder.addQuad(dataLub, dataRub, dataLuf, dataRuf);
+                            }
+
+                            // ****************************************************************************************
+                            // down
+                            // ****************************************************************************************
+
+                            if (y === 0 || !this.voxels[x][y - 1][z]) {
+
+                                const dataRdb = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz - 0.5));
+
+                                const dataLdb = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz - 0.5));
+
+                                const dataRdf = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz + 0.5));
+
+                                const dataLdf = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz + 0.5));
+
+                                builder.addQuad(dataRdb, dataLdb, dataRdf, dataLdf);
+                            }
+
+                            // ****************************************************************************************
+                            // front
+                            // ****************************************************************************************
+
+                            if (z === this.sizeZ - 1 || !this.voxels[x][y][z + 1]) {
+
+                                const dataLuf = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz + 0.5));
+
+                                const dataRuf = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz + 0.5));
+
+                                const dataLdf = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz + 0.5));
+
+                                const dataRdf = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz + 0.5));
+
+                                builder.addQuad(dataLuf, dataRuf, dataLdf, dataRdf);
+                            }
+
+                            // ****************************************************************************************
+                            // back
+                            // ****************************************************************************************
+
+                            if (z === 0 || !this.voxels[x][y][z - 1]) {
+
+                                const dataRub = new GeometryData(new Vector3(wx + 0.5, wy + 0.5, wz - 0.5));
+
+                                const dataLub = new GeometryData(new Vector3(wx - 0.5, wy + 0.5, wz - 0.5));
+
+                                const dataRdb = new GeometryData(new Vector3(wx + 0.5, wy - 0.5, wz - 0.5));
+
+                                const dataLdb = new GeometryData(new Vector3(wx - 0.5, wy - 0.5, wz - 0.5));
+
+                                builder.addQuad(dataRub, dataLub, dataRdb, dataLdb);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -74,51 +207,31 @@ export class VoxelQuad extends VoxelArray<VoxelSlice> {
     // ****************************************************************************************************************
     // function:    getVoxel
     // ****************************************************************************************************************
-    // parameters:  slice - the slice
+    // parameters:  x - the x
     // ****************************************************************************************************************
-    //              row - the row
+    //              y - the y
     // ****************************************************************************************************************
-    //              index - the index
+    //              z - the z
     // ****************************************************************************************************************
-    // returns:     the voxel
+    // returns:     the voxel 
     // ****************************************************************************************************************
-    public getVoxel(slice: number, row: number, index: number): boolean {
+    public getVoxel(x: number, y: number, z: number): boolean {
 
-        return this.get(slice, true)?.getVoxel(row, index) ?? false;
+        x -= this.min.x;
+
+        y -= this.min.y;
+
+        z -= this.min.z;
+
+        if (x >= 0 && x < this.sizeX && y >= 0 && y < this.sizeY && z >= 0 && z < this.sizeZ) {
+
+            return this.getVoxelInternal(x, y, z);
+        }
+        return false;
     }
 
     // ****************************************************************************************************************
-    // function:    getVoxels
-    // ****************************************************************************************************************
-    // parameters:  n/a
-    // ****************************************************************************************************************
-    // returns:     the voxels
-    // ****************************************************************************************************************
-    public getVoxels(): boolean {
-
-        return this.elements.length > 0 && this.elements.every(el => el.getVoxels());
-    }
-
-    // ****************************************************************************************************************
-    // function:    setVoxel
-    // ****************************************************************************************************************
-    // parameters:  slice - the slice
-    // ****************************************************************************************************************
-    //              row - the row
-    // ****************************************************************************************************************
-    //              index - the index
-    // ****************************************************************************************************************
-    //              voxel - the voxel
-    // ****************************************************************************************************************
-    // returns:     whether changed
-    // ****************************************************************************************************************
-    public setVoxel(slice: number, row: number, index: number, voxel: boolean): boolean {
-
-        return this.get(slice, true)?.setVoxel(row, index, voxel) ?? false;
-    }
-
-    // ****************************************************************************************************************
-    // function:    setVoxelAt
+    // function:    getVoxelInternal
     // ****************************************************************************************************************
     // parameters:  x - the x
     // ****************************************************************************************************************
@@ -126,26 +239,64 @@ export class VoxelQuad extends VoxelArray<VoxelSlice> {
     // ****************************************************************************************************************
     //              z - the z
     // ****************************************************************************************************************
+    // returns:     the voxel
+    // ****************************************************************************************************************
+    private getVoxelInternal(x: number, y: number, z: number): boolean {
+
+        if (this.voxels.length) {
+
+            return this.voxels[x][y][z];
+        }
+        return false;
+    }
+
+    // ****************************************************************************************************************
+    // function:    setVoxel
+    // ****************************************************************************************************************
+    // parameters:  x - the x
+    // ****************************************************************************************************************
+    //              y - the y
+    // ****************************************************************************************************************
+    //              z - the z
+    // ****************************************************************************************************************
+    //              voxel - the voxel
+    // ****************************************************************************************************************
     // returns:     n/a
     // ****************************************************************************************************************
-    public setVoxelAt(x: number, y: number, z: number, voxel: boolean): void {
+    public setVoxel(x: number, y: number, z: number, voxel: boolean): void {
 
-        const slice = x - this.bounds.min.x;
+        x -= this.min.x;
 
-        if (slice < 0 || slice >= this.size) return;
+        y -= this.min.y;
 
-        const row = y - this.bounds.min.y;
+        z -= this.min.z;
 
-        if (row < 0 || row >= this.size) return;
+        if (x >= 0 && x < this.sizeX && y >= 0 && y < this.sizeY && z >= 0 && z < this.sizeZ) {
 
-        const index = z - this.bounds.min.z;
-
-        if (index < 0 || index >= this.size) return;
-
-        if (this.setVoxel(slice, row, index, voxel)) {
-
-            this.dirty = true;
+            this.setVoxelInternal(x, y, z, voxel);
         }
+    }
+
+    // ****************************************************************************************************************
+    // function:    setVoxelInternal
+    // ****************************************************************************************************************
+    // parameters:  x - the x
+    // ****************************************************************************************************************
+    //              y - the y
+    // ****************************************************************************************************************
+    //              z - the z
+    // ****************************************************************************************************************
+    //              voxel - the voxel
+    // ****************************************************************************************************************
+    // returns:     n/a
+    // ****************************************************************************************************************
+    private setVoxelInternal(x: number, y: number, z: number, voxel: boolean): void {
+
+        this.createArray();
+
+        this.voxels[x][y][z] = voxel;
+
+        this.dirty = true;
     }
 
     // ****************************************************************************************************************
@@ -153,19 +304,19 @@ export class VoxelQuad extends VoxelArray<VoxelSlice> {
     // ****************************************************************************************************************
     // parameters:  voxel - the voxel
     // ****************************************************************************************************************
-    // returns:     whether changed
+    // returns:     n/a
     // ****************************************************************************************************************
-    public setVoxels(voxel: boolean): boolean {
+    public setVoxels(voxel: boolean): void {
 
         this.createArray();
 
-        for (var slice = 0; slice < this.size; slice++) {
+        for (var x = 0; x < this.sizeX; x++) {
 
-            this.get(slice)?.setVoxels(voxel);
+            for (var y = 0; y < this.sizeY; y++) {
+
+                this.voxels[x][y].fill(voxel);
+            }
         }
-        this.dirty = true;
-
-        return true;
     }
 
     // ****************************************************************************************************************
@@ -177,7 +328,7 @@ export class VoxelQuad extends VoxelArray<VoxelSlice> {
     // ****************************************************************************************************************
     public update(): void {
 
-        if (this.dirty && this.elements.length) {
+        if (this.dirty && this.voxels.length) {
 
             this.dirty = false;
 
@@ -187,15 +338,18 @@ export class VoxelQuad extends VoxelArray<VoxelSlice> {
 
             this.createGeometry(builder);
 
-            const geometry = builder.generate();
+            if (builder.valid) {
 
-            const material = new MeshStandardMaterial({ color: 'f0fff0', roughness: 1.0 });
+                const geometry = builder.generate();
 
-            geometry.computeVertexNormals();
+                const material = new MeshStandardMaterial({ color: '#f0fff0', roughness: 1.0, wireframe: false });
 
-            this.mesh = new Mesh(geometry, material);
+                geometry.computeVertexNormals();
 
-            this.scene.add(this.mesh);
+                this.mesh = new Mesh(geometry, material);
+
+                this.scene.add(this.mesh);
+            }
         }
     }
 }

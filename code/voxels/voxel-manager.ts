@@ -34,7 +34,7 @@ export class VoxelManager {
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(private readonly scene: Scene, private readonly quadSize: number = 16, private readonly quadsPerSide: number = 4) {
+    constructor(private readonly scene: Scene, private readonly quadSize: number = 16, private readonly quadsPerSide: number = 8) {
 
         this.quadSizeHalf = this.quadSize >> 1;
 
@@ -90,13 +90,13 @@ export class VoxelManager {
 
                             for (var ix = min.x; ix <= max.x; ix++) {
 
-                                for (var iy = 0; iy <= 16; iy++) {
+                                for (var iy = 0; iy <= max.y; iy++) {
 
                                     for (var iz = min.z; iz <= max.z; iz++) {
 
-                                        const noise = this.noise(ix / 64, iz / 64);
+                                        const noise = this.noise(ix / 32, iz / 32);
 
-                                        quad.setVoxelAt(ix, iy, iz, noise > 0);
+                                        quad.setVoxel(ix, iy, iz, noise > 0);
                                     }
                                 }
                             }
