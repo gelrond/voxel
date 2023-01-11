@@ -414,9 +414,9 @@ export class VoxelQuad extends Bounds3 {
 
                 geometry.computeVertexNormals();
 
-                const texture = new TextureLoader().load('/resources/voxel.png');
+                const map = new TextureLoader().load('/resources/voxel.png');
 
-                const material = new MeshStandardMaterial({ color: '#ffffff', map: texture, roughness: 0.5, wireframe: false });
+                const material = new MeshStandardMaterial({ color: '#ffffff', map: map, roughness: 0.9, wireframe: false });
 
                 this.mesh = new Mesh(geometry, material);
 

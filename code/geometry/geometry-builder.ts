@@ -35,7 +35,7 @@ export class GeometryBuilder {
     // returns:     the index
     // ****************************************************************************************************************
     public addGeometry(geometry: GeometryData): number {
-
+z
         return this.geometry.add(geometry);
     }
 

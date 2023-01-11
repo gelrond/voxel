@@ -6,6 +6,8 @@
 
 <a href="https://ibb.co/1JkPsC9"><img src="https://i.ibb.co/JF9GxYz/screenshot-1.png" alt="screenshot-1" border="0"></a>
 
+<a href="https://ibb.co/dkX6xWN"><img src="https://i.ibb.co/wp8Cj0n/screenshot-1.png" alt="screenshot-1" border="0"></a>
+
 <h3>Installation</h3>
 
 <ol>

@@ -17,6 +17,11 @@ export class VoxelManager {
     private readonly noise: NoiseFunction2D = createNoise2D();
 
     // ****************************************************************************************************************
+    // quadSizeDouble - the quad size double
+    // ****************************************************************************************************************
+    private readonly quadSizeDouble: number = 0;
+
+    // ****************************************************************************************************************
     // quadSizeHalf - the quad size half
     // ****************************************************************************************************************
     private readonly quadSizeHalf: number = 0;
@@ -34,9 +39,11 @@ export class VoxelManager {
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(private readonly scene: Scene, private readonly quadSize: number = 8, private readonly quadsPerSide: number = 16) {
+    constructor(private readonly scene: Scene, private readonly quadSize: number = 8, private readonly quadsPerSide: number = 12) {
 
         this.quadSizeHalf = this.quadSize >> 1;
+
+        this.quadSizeDouble = this.quadSize << 1;
 
         this.quadsPerSideHalf = this.quadsPerSide >> 1;
     }
@@ -90,7 +97,7 @@ export class VoxelManager {
                         // populate voxels
                         // ********************************************************************************************
 
-                        if (min.y <= 0) quad.setVoxels(true);
+                        if (max.y <= 0) quad.setVoxels(true);
 
                         else if (max.y <= 32) {
 
@@ -98,7 +105,7 @@ export class VoxelManager {
 
                                 for (var iz = min.z; iz <= max.z; iz++) {
 
-                                    const height = this.noise(ix / 32, iz / 32) * 20;
+                                    const height = ((this.noise(ix / 32, iz / 32) * 0.5) + 0.5) * this.quadSizeDouble;
 
                                     for (var iy = min.y; iy <= max.y; iy++) {
 

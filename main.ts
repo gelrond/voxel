@@ -1,5 +1,5 @@
 // ********************************************************************************************************************
-import { Color, DirectionalLight, HemisphereLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
+import { Color, DirectionalLight, FogExp2, HemisphereLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 // ********************************************************************************************************************
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // ********************************************************************************************************************
@@ -10,22 +10,23 @@ import { VoxelManager } from './code/voxels/voxel-manager';
 // scene & renderer
 // ********************************************************************************************************************
 const scene = new Scene();
-scene.background = new Color('#111111');
+scene.background = new Color('#0099ff');
+scene.fog = new FogExp2('#0099ff', 0.007);
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.shadowMap.enabled = true;
 
 // ********************************************************************************************************************
 // camera
 // ********************************************************************************************************************
-const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
-camera.position.set(0, 32, -128);
+const camera = new PerspectiveCamera(50, 1, 0.1, 200);
+camera.position.set(0, 40, -70);
 new OrbitControls(camera, renderer.domElement);
 
 // ********************************************************************************************************************
 // hemisphere light
 // ********************************************************************************************************************
-const hemisphere = new HemisphereLight('#a0a0ff', '#a02211', 1);
-hemisphere.position.set(0, 512, 0);
+const hemisphere = new HemisphereLight('#0099ff', '#991122', 1);
+hemisphere.position.set(0, 100, 0);
 scene.add(hemisphere);
 
 // ********************************************************************************************************************
@@ -40,7 +41,7 @@ sun.shadow.camera.right = 50;
 sun.shadow.mapSize.width = 1024;
 sun.shadow.mapSize.height = 1024;
 sun.shadow.camera.near = 0.1;
-sun.shadow.camera.far = 300;
+sun.shadow.camera.far = 200;
 sun.position.set(0, 100, 100);
 scene.add(sun);
 
