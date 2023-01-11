@@ -34,7 +34,7 @@ export class VoxelManager {
     // ****************************************************************************************************************
     // constructor
     // ****************************************************************************************************************
-    constructor(private readonly scene: Scene, private readonly quadSize: number = 8, private readonly quadsPerSide: number = 8) {
+    constructor(private readonly scene: Scene, private readonly quadSize: number = 8, private readonly quadsPerSide: number = 16) {
 
         this.quadSizeHalf = this.quadSize >> 1;
 

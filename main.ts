@@ -1,5 +1,5 @@
 // ********************************************************************************************************************
-import { Color, DirectionalLight, HemisphereLight, PerspectiveCamera, Scene, SpotLight, Vector3, WebGLRenderer } from 'three';
+import { Color, DirectionalLight, HemisphereLight, PerspectiveCamera, Scene, Vector3, WebGLRenderer } from 'three';
 // ********************************************************************************************************************
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // ********************************************************************************************************************
@@ -12,6 +12,7 @@ import { VoxelManager } from './code/voxels/voxel-manager';
 const scene = new Scene();
 scene.background = new Color('#111111');
 const renderer = new WebGLRenderer({ antialias: true });
+renderer.shadowMap.enabled = true;
 
 // ********************************************************************************************************************
 // camera
@@ -21,13 +22,26 @@ camera.position.set(0, 32, -128);
 new OrbitControls(camera, renderer.domElement);
 
 // ********************************************************************************************************************
-// lighting
+// hemisphere light
 // ********************************************************************************************************************
-const hemisphere = new HemisphereLight('#e0e0ff', '#a08899', 1);
+const hemisphere = new HemisphereLight('#a0a0ff', '#a02211', 1);
 hemisphere.position.set(0, 512, 0);
 scene.add(hemisphere);
+
+// ********************************************************************************************************************
+// sun light
+// ********************************************************************************************************************
 const sun = new DirectionalLight('#ffffa0', 1);
-sun.position.set(-1, 0.75, 1);
+sun.castShadow = true;
+sun.shadow.camera.top = 50;
+sun.shadow.camera.bottom = -50;
+sun.shadow.camera.left = -50;
+sun.shadow.camera.right = 50;
+sun.shadow.mapSize.width = 1024;
+sun.shadow.mapSize.height = 1024;
+sun.shadow.camera.near = 0.1;
+sun.shadow.camera.far = 300;
+sun.position.set(0, 100, 100);
 scene.add(sun);
 
 // ********************************************************************************************************************
@@ -58,8 +72,8 @@ function resize() {
 // update
 // ********************************************************************************************************************
 function update() {
+    voxels.update(new Vector3());
     requestAnimationFrame(update);
     renderer.render(scene, camera);
-    voxels.update(new Vector3());
 }
 initialise();
