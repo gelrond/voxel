@@ -1,5 +1,5 @@
 // ********************************************************************************************************************
-import { Mesh, MeshStandardMaterial, Scene, TextureLoader, Vector2 } from 'three/src/Three';
+import { Mesh, MeshStandardMaterial, NearestFilter, Scene, TextureFilter, TextureLoader, Vector2 } from 'three/src/Three';
 // ********************************************************************************************************************
 import { GeometryBuilder } from '../geometry/geometry-builder';
 // ********************************************************************************************************************
@@ -416,7 +416,9 @@ export class VoxelQuad extends Bounds3 {
 
                 const map = new TextureLoader().load('/resources/voxel.png');
 
-                const material = new MeshStandardMaterial({ color: '#ffffff', map: map, roughness: 0.9, wireframe: false });
+                map.minFilter = map.magFilter = NearestFilter;
+
+                const material = new MeshStandardMaterial({ color: '#ffffff', map: map, roughness: 1.0, wireframe: false });
 
                 this.mesh = new Mesh(geometry, material);
 

@@ -12,7 +12,7 @@ import { VoxelManager } from './code/voxels/voxel-manager';
 const scene = new Scene();
 scene.background = new Color('#0099ff');
 scene.fog = new FogExp2('#0099ff', 0.007);
-const renderer = new WebGLRenderer({ antialias: true });
+const renderer = new WebGLRenderer({ antialias: false });
 renderer.shadowMap.enabled = true;
 
 // ********************************************************************************************************************
@@ -25,7 +25,7 @@ new OrbitControls(camera, renderer.domElement);
 // ********************************************************************************************************************
 // hemisphere light
 // ********************************************************************************************************************
-const hemisphere = new HemisphereLight('#0099ff', '#991122', 1);
+const hemisphere = new HemisphereLight('#0094ff', '#007f0e', 1);
 hemisphere.position.set(0, 100, 0);
 scene.add(hemisphere);
 
